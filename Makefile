@@ -1,4 +1,4 @@
-.PHONY: build clean
+.PHONY: build_debug clean
 
 output_folder = build
 output = $(output_folder)/program
