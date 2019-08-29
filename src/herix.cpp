@@ -82,8 +82,6 @@ bool Herix::hasFile () const {
 }
 
 void Herix::loadFile (std::filesystem::path t_filename) {
-    std::cout << "Load File: " << t_filename << std::endl;
-
     // We have a file. Close it up.
     if (hasFile()) {
         closeFile();
@@ -109,8 +107,6 @@ void Herix::openFile (bool) {
 
 /// Closes file and throws away all data. Does NOT save any edits.
 void Herix::closeFile () {
-    std::cout << "Close File" << std::endl;
-
     if (file.is_open()) {
         file.clear(); // clear err state
 
@@ -134,21 +130,16 @@ size_t Herix::getFileSize () const {
 }
 
 void Herix::loadChunk (FilePositionStart pos) {
-    std::cout << "Loading chunk: " << pos << std::endl;
-
     if (!file.is_open()) {
-        std::cout << "File was not open" << std::endl;
         throw std::runtime_error("Attempting to load chunk whilst file was not open");
     }
 
     if (findChunk(pos).has_value()) {
-        std::cout << "Found chunk with that pos already" << std::endl;
         throw std::runtime_error("Attempted to load chunk that is already partially loaded!");
     }
 
     file.seekg(static_cast<std::streamoff>(pos));
     if (file.fail()) {
-        std::cout << "Failed to seek in file" << std::endl;
         throw std::runtime_error("Failed to seek to position in file!");
     }
 
@@ -226,7 +217,6 @@ void Herix::cleanupChunks () {
 
     for (ChunkID id : chunks_list) {
         Chunk& c = chunks.at(id);
-        std::cout << "Chunk: " << id << ": " << c.touched << " (" << c.last_touched.count() << ")\n";
     }
 
     // We might have to cleanup multiple chunks since they may go over the limit.
@@ -238,7 +228,6 @@ void Herix::cleanupChunks () {
         ChunkID id = chunks_list.at(0);
         chunks_list.pop_front();
 
-        std::cout << "Disposed of: " << id << ": " << chunks.at(id).start << "\n";
         chunks.erase(id);
     }
 }
