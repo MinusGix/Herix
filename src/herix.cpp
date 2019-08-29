@@ -215,10 +215,6 @@ void Herix::cleanupChunks () {
             (ac.last_touched+std::chrono::milliseconds(ac.touched)) < (bc.last_touched+std::chrono::milliseconds(bc.touched));
     });
 
-    for (ChunkID id : chunks_list) {
-        Chunk& c = chunks.at(id);
-    }
-
     // We might have to cleanup multiple chunks since they may go over the limit.
     while (chunks_list.size() * chunk_size > max_chunk_memory) {
         if (chunks_list.size() == 0) {
@@ -245,12 +241,6 @@ FilePosition Herix::getAlignedChunk (FilePosition pos) const {
     assert((pos % chunk_size) <= pos);
     assert((pos - (pos % chunk_size)) % chunk_size == 0);
     return pos - (pos % chunk_size);
-}
-/// Returns the nearest aligned chunk, not assured to include pos.
-FilePosition Herix::getNearestAlignedChunk (FilePosition pos) const {
-    // TODO: implement this
-    std::logic_error("getNearestAlignedChunk is not yet implemented");
-    return 0;
 }
 
 std::optional<ChunkID> Herix::findChunk(FilePosition pos) const {

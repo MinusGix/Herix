@@ -142,6 +142,7 @@ class Herix {
     // - You'll have to keep what the previous value was or something.
     // TODO: save as function. Copy the file, then write to it
     // - Just make a generic save function that takes a filename, and save just calls it with current filename
+    // TODO: function get nearest chunk, that does not have to include pos
 };
 
 #endif

@@ -272,23 +272,6 @@ bool EditStorage::canRedo () const {
     return end < edits.size();
 }
 
-/// Joins edits at the same position to only have the most recent version
-/// This WILL STOP undo from going into the collated section, since it will be funky there
-/// Does not affect anything in the 'future'
-void EditStorage::collateEdits () {
-    throw std::logic_error("This function is not yet implemented (collateEdits)");
-    if (!current_end.has_value()) {
-        return;
-    }
-    // TODO: finish this
-
-    size_t end = getCurrentEnd();
-
-    for (size_t i = 0; i < end; i++) {
-
-    }
-}
-
 void EditStorage::clear () noexcept {
     bytes_written_alltime = 0;
     bytes_written = 0;
