@@ -127,16 +127,15 @@ void EditStorage::edit (FilePosition pos, Byte value) {
 void EditStorage::editMultiple (FilePosition pos, Buffer data) {
     assert(current_limit == 0 || current_limit <= current_end);
 
-    if (!current_end.has_value()) {
-        // Just push to end if the current_end.. is at the end :)
-        edits.push_back(EditStorageItem(pos, data));
-    } else {
-        assert(current_end.value() <= static_cast<size_t>(std::numeric_limits<std::vector<EditStorageItem>::difference_type>::max()));
-
-        // I dislike this. Current_end is unsigned long (well size_t), but difference_type is signed long (well, I imagine it's ssize_t)
-        // Indexing uses size_type (aka size_t), but insert uses the signed version...
-        edits.insert(edits.begin() + static_cast<std::vector<EditStorageItem>::difference_type>(current_end.value()), EditStorageItem(pos, data));
+    if (current_end.has_value()) {
+        while (edits.size() > current_end) {
+            edits.pop_back();
+        }
+        current_end = std::nullopt;
     }
+
+    edits.push_back(EditStorageItem(pos, data));
+
     bytes_written += data.size();
     bytes_written_alltime += data.size();
 }
