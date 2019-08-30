@@ -168,6 +168,7 @@ void Herix::loadChunk (FilePositionStart pos) {
         // I don't see anything about it being able to fail and not be in eof on my reference, but just in case
         throw std::runtime_error("Failed to read data from file!");
     } else {
+        chunk.data.resize(file.gcount());
         // Might as well shrink
         chunk.data.shrink_to_fit();
     }
