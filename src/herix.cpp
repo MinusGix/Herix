@@ -264,8 +264,6 @@ std::optional<Byte> Herix::readRaw (FilePosition pos) {
         try {
             loadChunk(getAlignedChunk(pos));
         } catch (...) {
-            // TODO: remove this assert when this code is good
-            assert(false);
             return std::nullopt;
         }
 
