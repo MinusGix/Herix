@@ -81,8 +81,8 @@ class EditStorage {
 
 
 // == Other ==
-    // TODO: do testing of collateEdits once it's made
-    void collateEdits ();
+    // TODO: add a function to join edits together to shrink space usage of the stored edits.
+    // Would break undo, but that's fine if it's only ran when explcitly
 
     void clear () noexcept;
     void clearNotStats () noexcept;
