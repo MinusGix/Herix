@@ -129,6 +129,8 @@ class Herix {
     UndoInfo undo ();
     RedoInfo redo ();
 
+    bool hasUnsavedEdits () const;
+
     bool canUndo () const;
     bool canRedo () const;
 

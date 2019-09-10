@@ -355,6 +355,11 @@ RedoInfo Herix::redo () {
     return RedoInfo(edits.redoR());
 }
 
+bool Herix::hasUnsavedEdits () const {
+    // FIXME: this needs to be changed once there's ways of saving other than
+    return canUndo();
+}
+
 bool Herix::canUndo () const {
     return edits.canUndo();
 }
