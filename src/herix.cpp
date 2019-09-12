@@ -190,6 +190,11 @@ bool Herix::hasChunk (size_t id) const {
     return id < chunks.size();
 }
 
+// Throws away all the chunks.
+void Herix::invalidateChunks () {
+    chunks.clear();
+}
+
 /// Cleanup the chunks if they've gone over the limit.
 /// Tries disposing of them in least used order and least recently loaded
 void Herix::cleanupChunks () {
@@ -319,6 +324,7 @@ void Herix::saveHistoryDestructive () {
         file.write(reinterpret_cast<const char *>(edit.data.data()), static_cast<std::streamsize>(edit.data.size()));
     }
 
+    invalidateChunks();
     edits.clearNotStats();
 }
 /// Saves the files, to the filename. Overwrites if it already exists

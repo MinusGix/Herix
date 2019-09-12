@@ -112,6 +112,7 @@ class Herix {
     bool hasChunk (ChunkID id) const;
 
     void cleanupChunks ();
+    void invalidateChunks ();
 
 
     std::optional<Byte> read (FilePosition pos);
