@@ -119,6 +119,8 @@ class Herix {
     std::optional<Byte> readRaw (FilePosition pos);
     std::vector<std::optional<Byte>> readMultiple (FilePosition pos, size_t size);
     std::vector<std::optional<Byte>> readMultipleRaw (FilePosition pos, size_t size);
+    std::vector<Byte> readMultipleCutoff (FilePosition pos, size_t size);
+    // TODO: add readRawMultipleCutoff
 
     void edit (FilePosition pos, Byte value);
     void editMultiple (FilePosition pos, Buffer values);

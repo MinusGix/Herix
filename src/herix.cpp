@@ -327,6 +327,24 @@ std::vector<std::optional<Byte>> Herix::readMultiple (FilePosition pos, size_t s
     return result;
 }
 
+std::vector<Byte> Herix::readMultipleCutoff (FilePosition pos, size_t size) {
+    std::vector<Byte> result;
+    // We're often going to be reading a large area from the file that isn't at the end
+    // So I think this is appropriate.
+    result.reserve(size);
+
+    for (size_t i = 0; i < size; i++) {
+        std::optional<Byte> byte = read(pos + i);
+        if (!byte.has_value()) {
+            break;
+        }
+
+        result.push_back(byte.value());
+    }
+
+    return result;
+}
+
 void Herix::edit (FilePosition pos, Byte value) {
     edits.edit(pos, value);
 }
