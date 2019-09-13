@@ -305,6 +305,28 @@ std::optional<Byte> Herix::read (FilePosition pos) {
     return readRaw(pos);
 }
 
+std::vector<std::optional<Byte>> Herix::readMultipleRaw (FilePosition pos, size_t size) {
+    std::vector<std::optional<Byte>> result;
+    result.reserve(size);
+
+    for (size_t i = 0; i < size; i++) {
+        result.push_back(readRaw(pos + i));
+    }
+
+    return result;
+}
+
+std::vector<std::optional<Byte>> Herix::readMultiple (FilePosition pos, size_t size) {
+    std::vector<std::optional<Byte>> result;
+    result.reserve(size);
+
+    for (size_t i = 0; i < size; i++) {
+        result.push_back(read(pos + i));
+    }
+
+    return result;
+}
+
 void Herix::edit (FilePosition pos, Byte value) {
     edits.edit(pos, value);
 }

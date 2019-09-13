@@ -117,7 +117,8 @@ class Herix {
 
     std::optional<Byte> read (FilePosition pos);
     std::optional<Byte> readRaw (FilePosition pos);
-    // TODO: readMultiple and readMultipleRaw
+    std::vector<std::optional<Byte>> readMultiple (FilePosition pos, size_t size);
+    std::vector<std::optional<Byte>> readMultipleRaw (FilePosition pos, size_t size);
 
     void edit (FilePosition pos, Byte value);
     void editMultiple (FilePosition pos, Buffer values);
