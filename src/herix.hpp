@@ -112,7 +112,7 @@ class Herix {
     bool hasChunks () const;
     bool hasChunk (ChunkID id) const;
 
-    void cleanupChunks ();
+    void cleanupChunks (std::vector<ChunkID> ignore);
     void invalidateChunks ();
 
 

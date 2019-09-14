@@ -209,7 +209,7 @@ void Herix::invalidateChunks () {
 
 /// Cleanup the chunks if they've gone over the limit.
 /// Tries disposing of them in least used order and least recently loaded
-void Herix::cleanupChunks () {
+void Herix::cleanupChunks (std::vector<ChunkID> ignore) {
     // We want to clean up in order of farthest away last used, and least used
     // Having the time it was last used lets us keep recently loaded chunks, and dump chunks that were loaded
 
@@ -232,6 +232,16 @@ void Herix::cleanupChunks () {
         return ac.last_touched != std::chrono::milliseconds(0) &&
             (ac.last_touched+std::chrono::milliseconds(ac.touched)) < (bc.last_touched+std::chrono::milliseconds(bc.touched));
     });
+    chunks_list.erase(std::remove_if(
+        chunks_list.begin(), chunks_list.end(),
+        [&ignore](ChunkID cid) {
+            for (ChunkID iid : ignore) {
+                if (iid == cid) {
+                    return true;
+                }
+            }
+            return false;
+        }), chunks_list.end());
 
     // We might have to cleanup multiple chunks since they may go over the limit.
     while (chunks_list.size() * chunk_size > max_chunk_memory) {
@@ -304,7 +314,7 @@ std::optional<Byte> Herix::readRaw (FilePosition pos) {
 
     chunk.touch();
 
-    cleanupChunks();
+    cleanupChunks({ cid.value() });
     return chunk.data.at(pos - chunk.start);
 }
 
