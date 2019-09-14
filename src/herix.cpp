@@ -129,7 +129,45 @@ size_t Herix::getFileSize () const {
     return std::filesystem::file_size(filename);
 }
 
-void Herix::loadChunk (FilePositionStart pos) {
+void Herix::loadIntoChunk (FilePosition pos, ChunkSize read_size, ChunkID cid, Chunk& chunk, bool eof_handling) {
+    file.seekg(static_cast<std::streamoff>(pos));
+    if (file.fail()) {
+        throw std::runtime_error("Failed to seek to position in file!: " + std::to_string(pos) + " | " + std::to_string(static_cast<std::streamoff>(pos)));
+    }
+
+    chunk.data.resize(read_size);
+
+    // Make sure there's enough space, there should be unless I'm misunderstanding
+    assert(chunk.data.capacity() >= read_size);
+    assert(read_size <= static_cast<ChunkSize>(std::numeric_limits<std::streamsize>::max()));
+
+    file.clear();
+    // Characters are extracted and stored until:
+    // read_size characters were extracted and stored
+    // or, EOF condition occurs on the input sequence. setstate(failbit|eofbit) is called.
+    //    the number of extracted cahracters can be queried using gcount
+    // TODO: find a way around using reinterpret cast :|
+    file.read(reinterpret_cast<char*>(chunk.data.data()), static_cast<std::streamsize>(read_size));
+
+    if (file.fail() && !file.eof()) { // fail, but not eof
+        chunks.erase(cid);
+        // I don't see anything about it being able to fail and not be in eof on my reference, but just in case
+        throw std::runtime_error("Failed to read data from file!");
+    } else if (file.fail() && file.eof()) {
+        if (eof_handling) {
+            // We are already handling eof.. so let's not continue.
+            throw std::runtime_error("Eof handling failed! Previous size: " + std::to_string(read_size) + ", attempted current: " + std::to_string(file.gcount()));
+        }
+        loadIntoChunk(pos, file.gcount(), cid, chunk, true);
+    } else {
+        std::streamsize gcount = file.gcount();
+        chunk.data.resize(gcount);
+        // Might as well shrink
+        chunk.data.shrink_to_fit();
+    }
+}
+
+void Herix::loadChunk (FilePositionStart pos, ChunkSize read_size) {
     if (!file.is_open()) {
         throw std::runtime_error("Attempting to load chunk whilst file was not open");
     }
@@ -138,40 +176,14 @@ void Herix::loadChunk (FilePositionStart pos) {
         throw std::runtime_error("Attempted to load chunk that is already partially loaded!");
     }
 
-    file.seekg(static_cast<std::streamoff>(pos));
-    if (file.fail()) {
-        throw std::runtime_error("Failed to seek to position in file!");
-    }
-
     // Half-formed. This has to be filled in.
     //ChunkID cid = addChunk(Chunk(pos, chunk_size));
     ChunkID cid = getNewChunkID();
     chunks.emplace(std::make_pair(cid, Chunk(pos, chunk_size)));
 
     Chunk& chunk = chunks.at(cid);
-    chunk.data.resize(chunk_size);
 
-    // Make sure there's enough space, there should be unless I'm misunderstanding
-    assert(chunk.data.capacity() >= chunk_size);
-    assert(chunk_size <= static_cast<ChunkSize>(std::numeric_limits<std::streamsize>::max()));
-
-    file.clear();
-    // Characters are extracted and stored until:
-    // chunk_size characters were extracted and stored
-    // or, EOF condition occurs on the input sequence. setstate(failbit|eofbit) is called.
-    //    the number of extracted cahracters can be queried using gcount
-    // TODO: find a way around using reinterpret cast :|
-    file.read(reinterpret_cast<char*>(chunk.data.data()), static_cast<std::streamsize>(chunk_size));
-
-    if (file.fail() && !file.eof()) { // fail, but not eof
-        chunks.erase(cid);
-        // I don't see anything about it being able to fail and not be in eof on my reference, but just in case
-        throw std::runtime_error("Failed to read data from file!");
-    } else {
-        chunk.data.resize(file.gcount());
-        // Might as well shrink
-        chunk.data.shrink_to_fit();
-    }
+    loadIntoChunk(pos, read_size, cid, chunk);
 }
 
 ChunkID Herix::getNewChunkID () {
@@ -268,9 +280,10 @@ std::optional<Byte> Herix::readRaw (FilePosition pos) {
 
     if (!cid.has_value()) {
         try {
-            loadChunk(getAlignedChunk(pos));
+            loadChunk(getAlignedChunk(pos), chunk_size);
         } catch (...) {
-            return std::nullopt;
+            throw;
+            //return std::nullopt;
         }
 
         cid = findChunk(pos);
@@ -282,6 +295,8 @@ std::optional<Byte> Herix::readRaw (FilePosition pos) {
             return std::nullopt;
         }
     }
+
+    assert(cid.has_value());
 
     Chunk& chunk = chunks.at(cid.value());
 

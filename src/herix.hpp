@@ -81,7 +81,8 @@ class Herix {
     std::fstream file;
 
     void destroyChunk (ChunkID id);
-    void loadChunk (FilePosition pos);
+    void loadChunk (FilePosition pos, ChunkSize read_size);
+    void loadIntoChunk (FilePosition pos, ChunkSize read_size, ChunkID cid, Chunk& chunk, bool eof_handling=false);
     ChunkID getNewChunkID ();
 
     /// Swapping is used to note that we're swapping file (such as with saveas)
