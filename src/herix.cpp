@@ -317,6 +317,12 @@ std::optional<Byte> Herix::readRaw (FilePosition pos) {
 
     chunk.touch();
 
+    // It's valid for it to be out of range, since this Chunk might be on the edge
+    // So it tries accessing something within the chunks realm but isn't actually existant
+    if (chunk.data.size() <= pos - chunk.start) {
+        return std::nullopt;
+    }
+
     return chunk.data.at(pos - chunk.start);
 }
 
