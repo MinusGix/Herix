@@ -130,6 +130,7 @@ size_t Herix::getFileSize () const {
 }
 
 void Herix::loadIntoChunk (FilePosition pos, ChunkSize read_size, ChunkID cid, Chunk& chunk, bool eof_handling) {
+    file.clear();
     file.seekg(static_cast<std::streamoff>(pos));
     if (file.fail()) {
         throw std::runtime_error("Failed to seek to position in file!: " + std::to_string(pos) + " | " + std::to_string(static_cast<std::streamoff>(pos)));
@@ -277,7 +278,7 @@ std::optional<ChunkID> Herix::findChunk(FilePosition pos) const {
 
         // TODO: check this logic to make sure it's not off by one
         // TODO: think if I should instead use the data size, since we aren't intending to support modification of file mid-edit
-        if (pos >= chunk.second.start && pos < (chunk.second.start + chunk.second.getRealSize())) {
+        if (pos >= chunk.second.start && pos < (chunk.second.start + chunk.second.size)) {
             return chunk.first;
         }
     }
@@ -304,6 +305,8 @@ std::optional<Byte> Herix::readRaw (FilePosition pos) {
             assert(false);
             return std::nullopt;
         }
+
+        cleanupChunks({ cid.value() });
     }
 
     assert(cid.has_value());
@@ -314,7 +317,6 @@ std::optional<Byte> Herix::readRaw (FilePosition pos) {
 
     chunk.touch();
 
-    cleanupChunks({ cid.value() });
     return chunk.data.at(pos - chunk.start);
 }
 
