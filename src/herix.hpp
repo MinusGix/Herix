@@ -1,6 +1,5 @@
 #ifndef FILE_SEEN_HERIX
 #define FILE_SEEN_HERIX
-
 #include <optional>
 #include <ctime>
 #include <map>
@@ -10,6 +9,8 @@
 
 #include "types.hpp"
 #include "editstorage.hpp"
+
+namespace HerixLib {
 
 // TODO: rename all uses of index to 'id' or some related. Do this in the herix.cpp file too.
 
@@ -152,4 +153,5 @@ class Herix {
     // TODO: function get nearest chunk, that does not have to include pos
 };
 
+}
 #endif

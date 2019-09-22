@@ -4,6 +4,7 @@
 #include "types.hpp"
 #include <vector>
 #include <optional>
+namespace HerixLib {
 
 class EditStorageItem {
     public:
@@ -89,5 +90,7 @@ class EditStorage {
 };
 
 void test_editstorage();
+
+}
 
 #endif

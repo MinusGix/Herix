@@ -2,6 +2,8 @@
 #include <map>
 #include <cassert>
 
+using namespace HerixLib;
+
 EditStorageItem::EditStorageItem (FilePosition t_pos, Buffer t_data) {
     pos = t_pos;
     data = t_data;
@@ -293,7 +295,7 @@ void EditStorage::clearNotStats () noexcept {
 #ifdef DEBUG
 
 #include <iostream>
-void test_editstorage () {
+void HerixLib::test_editstorage () {
     EditStorage e;
     // = Test without elements
 

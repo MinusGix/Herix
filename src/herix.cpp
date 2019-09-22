@@ -7,6 +7,8 @@
 
 #include "herix.hpp"
 
+using namespace HerixLib;
+
 std::chrono::milliseconds getMillisecondsSinceEpoch ();
 
 

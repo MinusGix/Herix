@@ -1,10 +1,11 @@
 #include <iostream>
+#include <filesystem>
 #include "types.hpp"
 #include "herix.hpp"
 
 int main () {
-    test_editstorage();
-    Herix h = Herix(std::filesystem::current_path() / "test_files/text_file.txt", 24, 8);
+    HerixLib::test_editstorage();
+    HerixLib::Herix h = HerixLib::Herix(std::filesystem::current_path() / "test_files/text_file.txt", 24, 8);
 
     std::cout << "0: " << unsigned(h.read(0).value()) << ", 1: " << unsigned(h.read(1).value()) << ", 2: " << unsigned(h.read(2).value()) << "\n";
     h.edit(0, 5);
