@@ -80,6 +80,7 @@ class Herix {
 
     // No need to be wrapped in an optional since it can just have a file.
     std::fstream file;
+    bool allow_writing = true;
 
     void destroyChunk (ChunkID id);
     void loadChunk (FilePosition pos, ChunkSize read_size);
@@ -101,8 +102,8 @@ class Herix {
     /// The filename to open
     /// Ten kilobytes. This default will likely be increased once the program is in a more stable state.
     /// Having at least three chunks being inside max_chunk memory is probably the best since it will allow more buffering to hide file loading.
-    Herix (std::filesystem::path t_filename, ChunkSize t_max_chunk_memory=1024*10, ChunkSize t_chunk_size=1024);
-    Herix (ChunkSize t_max_chunk_memory=1024*10, ChunkSize t_chunk_size=1024);
+    Herix (std::filesystem::path t_filename, bool t_allow_writing=true, ChunkSize t_max_chunk_memory=1024*10, ChunkSize t_chunk_size=1024);
+    Herix (bool t_allow_writing=true, ChunkSize t_max_chunk_memory=1024*10, ChunkSize t_chunk_size=1024);
 
     bool hasFile () const;
     void loadFile (std::filesystem::path t_filename);

@@ -68,13 +68,15 @@ std::optional<std::chrono::milliseconds> Chunk::timeElapsed () {
 }
 
 
-Herix::Herix (std::filesystem::path t_filename, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) {
+Herix::Herix (std::filesystem::path t_filename, bool t_allow_writing, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) {
+    allow_writing = t_allow_writing;
     max_chunk_memory = t_max_chunk_memory;
     chunk_size = t_chunk_size;
 
     loadFile(t_filename);
 }
-Herix::Herix (ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) {
+Herix::Herix (bool t_allow_writing, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) {
+    allow_writing = t_allow_writing;
     max_chunk_memory = t_max_chunk_memory;
     chunk_size = t_chunk_size;
 }
@@ -95,6 +97,11 @@ void Herix::loadFile (std::filesystem::path t_filename) {
 }
 // Does not currently use swapping, but it's there if we do strange things
 void Herix::openFile (bool) {
+    std::ios_base::openmode mode = std::ios_base::in | std::ios_base::binary;
+    if (allow_writing) {
+        mode |= std::ios_base::out;
+    }
+
     file.open(filename, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
 
     if (file.fail()) {
@@ -390,6 +397,10 @@ void Herix::editMultiple (FilePosition pos, Buffer values) {
 
 /// Saves the files, just writes the edits and throws them away.
 void Herix::saveHistoryDestructive () {
+    if (!allow_writing) {
+        return;
+    }
+
     // TODO: make this efficient, so it only writes what it needs to
     // TODO: it'd also be nice to make so if it fails at writing, then there won't be partial writes
     for (const EditStorageItem& edit : edits.edits) {
@@ -409,6 +420,8 @@ void Herix::saveAsHistoryDestructive (std::string output) {
     if (!hasFile()) {
         throw std::runtime_error("No file.");
     }
+
+    // We allow saving-as, even if allow_writing is false, since it's to a new file.
 
     try {
         std::filesystem::copy_file(filename, output);
