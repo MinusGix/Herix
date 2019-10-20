@@ -80,7 +80,6 @@ class Herix {
 
     // No need to be wrapped in an optional since it can just have a file.
     std::fstream file;
-    bool allow_writing = true;
 
     void destroyChunk (ChunkID id);
     void loadChunk (FilePosition pos, ChunkSize read_size);
@@ -92,6 +91,7 @@ class Herix {
     void openFile (bool swapping);
 
     public:
+    bool allow_writing = true;
 
     // This should stay visible to code so they can directly mess with it if required.
     EditStorage edits;
