@@ -102,7 +102,7 @@ void Herix::openFile (bool) {
         mode |= std::ios_base::out;
     }
 
-    file.open(filename, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+    file.open(filename, mode);
 
     if (file.fail()) {
         // TODO: make an errortype for this
