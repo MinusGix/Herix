@@ -61,16 +61,10 @@ std::optional<std::chrono::milliseconds> Chunk::timeElapsed () {
 }
 
 
-Herix::Herix (std::filesystem::path t_filename, bool t_allow_writing, AbsoluteFilePosition t_start_position, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) :
-    Herix(t_filename, t_allow_writing, std::make_pair(t_start_position, std::nullopt), t_max_chunk_memory, t_chunk_size) {
-    loadFile(t_filename);
-}
 Herix::Herix (std::filesystem::path t_filename, bool t_allow_writing, std::pair<AbsoluteFilePosition, std::optional<AbsoluteFilePosition>> read_pos, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) :
     max_chunk_memory(t_max_chunk_memory), chunk_size(t_chunk_size), start_position(read_pos.first), end_position(read_pos.second), allow_writing(t_allow_writing) {
     loadFile(t_filename);
 }
-Herix::Herix (bool t_allow_writing, AbsoluteFilePosition t_start_position, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) :
-    Herix(t_allow_writing, std::make_pair(t_start_position, std::nullopt), t_max_chunk_memory, t_chunk_size) {}
 Herix::Herix (bool t_allow_writing, std::pair<AbsoluteFilePosition, std::optional<AbsoluteFilePosition>> read_pos, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) :
     max_chunk_memory(t_max_chunk_memory), chunk_size(t_chunk_size), start_position(read_pos.first), end_position(read_pos.second), allow_writing(t_allow_writing) {}
 
