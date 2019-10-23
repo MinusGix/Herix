@@ -8,7 +8,7 @@ int main () {
     HerixLib::Herix h = HerixLib::Herix(
         std::filesystem::current_path() / "test_files/text_file.txt",
         true,
-        2,
+        std::make_pair(2, std::make_optional(60)),
         24,
         8
     );
@@ -40,6 +40,18 @@ int main () {
 
     std::cout << "File size: " << h.getFileSize() << "\nFile End: " << h.getFileEnd() << "\n";
     std::cout << "File start: " << h.getStartPosition() << "\n";
+
+    std::cout << "'";
+    for (size_t i = 0; i < h.getFileEnd(); i++) {
+        auto read = h.read(i);
+        if (read.has_value()) {
+            std::cout << static_cast<char>(read.value()) << " ";
+        } else {
+            std::cout << "Break on " << i << "\n";
+            break;
+        }
+    }
+    std::cout << "'\n";
 
     return 0;
 }

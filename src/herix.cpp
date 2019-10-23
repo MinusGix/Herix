@@ -62,14 +62,23 @@ std::optional<std::chrono::milliseconds> Chunk::timeElapsed () {
 
 
 Herix::Herix (std::filesystem::path t_filename, bool t_allow_writing, AbsoluteFilePosition t_start_position, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) :
-    max_chunk_memory(t_max_chunk_memory), chunk_size(t_chunk_size), start_position(t_start_position), allow_writing(t_allow_writing) {
+    Herix(t_filename, t_allow_writing, std::make_pair(t_start_position, std::nullopt), t_max_chunk_memory, t_chunk_size) {
+    loadFile(t_filename);
+}
+Herix::Herix (std::filesystem::path t_filename, bool t_allow_writing, std::pair<AbsoluteFilePosition, std::optional<AbsoluteFilePosition>> read_pos, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) :
+    max_chunk_memory(t_max_chunk_memory), chunk_size(t_chunk_size), start_position(read_pos.first), end_position(read_pos.second), allow_writing(t_allow_writing) {
     loadFile(t_filename);
 }
 Herix::Herix (bool t_allow_writing, AbsoluteFilePosition t_start_position, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) :
-    max_chunk_memory(t_max_chunk_memory), chunk_size(t_chunk_size), start_position(t_start_position), allow_writing(t_allow_writing) {}
+    Herix(t_allow_writing, std::make_pair(t_start_position, std::nullopt), t_max_chunk_memory, t_chunk_size) {}
+Herix::Herix (bool t_allow_writing, std::pair<AbsoluteFilePosition, std::optional<AbsoluteFilePosition>> read_pos, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) :
+    max_chunk_memory(t_max_chunk_memory), chunk_size(t_chunk_size), start_position(read_pos.first), end_position(read_pos.second), allow_writing(t_allow_writing) {}
 
 AbsoluteFilePosition Herix::getStartPosition () const noexcept {
     return start_position;
+}
+std::optional<AbsoluteFilePosition> Herix::getEndPosition () const noexcept {
+    return end_position;
 }
 
 bool Herix::hasFile () const {
@@ -134,6 +143,12 @@ size_t Herix::getFileEnd () const {
 
     if (file_size <= start_position) {
         return 0;
+    } else if (end_position.has_value()) {
+        if (end_position.value() < start_position) {
+            return 0;
+        } else {
+            return end_position.value() - start_position;
+        }
     } else {
         return getFileSize() - start_position;
     }
@@ -158,12 +173,19 @@ void Herix::loadIntoChunk (FilePosition pos, ChunkSize read_size, ChunkID cid, C
     assert(read_size <= static_cast<ChunkSize>(std::numeric_limits<std::streamsize>::max()));
 
     file.clear();
+
+    ChunkSize real_read_size;
+    if (pos+read_size >= getFileEnd()) {
+        real_read_size = getFileEnd() - pos;
+    } else {
+        real_read_size = read_size;
+    }
     // Characters are extracted and stored until:
     // read_size characters were extracted and stored
     // or, EOF condition occurs on the input sequence. setstate(failbit|eofbit) is called.
     //    the number of extracted cahracters can be queried using gcount
     // TODO: find a way around using reinterpret cast :|
-    file.read(reinterpret_cast<char*>(chunk.data.data()), static_cast<std::streamsize>(read_size));
+    file.read(reinterpret_cast<char*>(chunk.data.data()), static_cast<std::streamsize>(real_read_size));
 
     if (file.fail() && !file.eof()) { // fail, but not eof
         chunks.erase(cid);
@@ -172,7 +194,7 @@ void Herix::loadIntoChunk (FilePosition pos, ChunkSize read_size, ChunkID cid, C
     } else if (file.fail() && file.eof()) {
         if (eof_handling) {
             // We are already handling eof.. so let's not continue.
-            throw std::runtime_error("Eof handling failed! Previous size: " + std::to_string(read_size) + ", attempted current: " + std::to_string(file.gcount()));
+            throw std::runtime_error("Eof handling failed! Previous size: " + std::to_string(real_read_size) + ", attempted current: " + std::to_string(file.gcount()));
         }
         loadIntoChunk(pos, file.gcount(), cid, chunk, true);
     } else {
@@ -191,6 +213,10 @@ void Herix::loadChunk (FilePositionStart pos, ChunkSize read_size) {
 
     if (findChunk(pos).has_value()) {
         throw std::runtime_error("Attempted to load chunk that is already partially loaded!");
+    }
+
+    if (pos >= getFileEnd()) {
+        throw std::runtime_error("Attempted to load chunk past end of file.");
     }
 
     // Half-formed. This has to be filled in.
