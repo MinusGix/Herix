@@ -31,16 +31,9 @@ bool UndoInfo::wasSuccess () {
 }
 
 
-Chunk::Chunk (FilePositionStart t_start, ChunkSize t_size, Buffer t_data) {
-    start = t_start;
-    size = t_size;
-    data = t_data;
-}
+Chunk::Chunk (FilePositionStart t_start, ChunkSize t_size, Buffer t_data) : start(t_start), size(t_size), data(t_data) {}
 /// For construction which fills the vector in the struct
-Chunk::Chunk (FilePositionStart t_start, ChunkSize t_size) {
-    start = t_start;
-    size = t_size;
-}
+Chunk::Chunk (FilePositionStart t_start, ChunkSize t_size) : start(t_start), size(t_size){}
 
 bool Chunk::isSizeEqual () const {
     return size == data.size();
@@ -68,20 +61,12 @@ std::optional<std::chrono::milliseconds> Chunk::timeElapsed () {
 }
 
 
-Herix::Herix (std::filesystem::path t_filename, bool t_allow_writing, AbsoluteFilePosition t_start_position, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) {
-    allow_writing = t_allow_writing;
-    start_position = t_start_position;
-    max_chunk_memory = t_max_chunk_memory;
-    chunk_size = t_chunk_size;
-
+Herix::Herix (std::filesystem::path t_filename, bool t_allow_writing, AbsoluteFilePosition t_start_position, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) :
+    max_chunk_memory(t_max_chunk_memory), chunk_size(t_chunk_size), start_position(t_start_position), allow_writing(t_allow_writing) {
     loadFile(t_filename);
 }
-Herix::Herix (bool t_allow_writing, AbsoluteFilePosition t_start_position, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) {
-    allow_writing = t_allow_writing;
-    start_position = t_start_position;
-    max_chunk_memory = t_max_chunk_memory;
-    chunk_size = t_chunk_size;
-}
+Herix::Herix (bool t_allow_writing, AbsoluteFilePosition t_start_position, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) :
+    max_chunk_memory(t_max_chunk_memory), chunk_size(t_chunk_size), start_position(t_start_position), allow_writing(t_allow_writing) {}
 
 AbsoluteFilePosition Herix::getStartPosition () const noexcept {
     return start_position;

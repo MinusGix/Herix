@@ -4,10 +4,7 @@
 
 using namespace HerixLib;
 
-EditStorageItem::EditStorageItem (FilePosition t_pos, Buffer t_data) {
-    pos = t_pos;
-    data = t_data;
-}
+EditStorageItem::EditStorageItem (FilePosition t_pos, Buffer t_data) : pos(t_pos), data(t_data) {}
 
 
 
