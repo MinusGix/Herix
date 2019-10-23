@@ -10,6 +10,7 @@ using Byte = uint8_t;
 using Buffer = std::vector<Byte>;
 
 using FilePosition = size_t;
+using AbsoluteFilePosition = size_t;
 
 }
 

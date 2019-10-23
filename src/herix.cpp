@@ -68,17 +68,23 @@ std::optional<std::chrono::milliseconds> Chunk::timeElapsed () {
 }
 
 
-Herix::Herix (std::filesystem::path t_filename, bool t_allow_writing, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) {
+Herix::Herix (std::filesystem::path t_filename, bool t_allow_writing, AbsoluteFilePosition t_start_position, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) {
     allow_writing = t_allow_writing;
+    start_position = t_start_position;
     max_chunk_memory = t_max_chunk_memory;
     chunk_size = t_chunk_size;
 
     loadFile(t_filename);
 }
-Herix::Herix (bool t_allow_writing, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) {
+Herix::Herix (bool t_allow_writing, AbsoluteFilePosition t_start_position, ChunkSize t_max_chunk_memory, ChunkSize t_chunk_size) {
     allow_writing = t_allow_writing;
+    start_position = t_start_position;
     max_chunk_memory = t_max_chunk_memory;
     chunk_size = t_chunk_size;
+}
+
+AbsoluteFilePosition Herix::getStartPosition () const noexcept {
+    return start_position;
 }
 
 bool Herix::hasFile () const {
@@ -138,11 +144,26 @@ size_t Herix::getFileSize () const {
     return std::filesystem::file_size(filename);
 }
 
+size_t Herix::getFileEnd () const {
+    size_t file_size = getFileSize();
+
+    if (file_size <= start_position) {
+        return 0;
+    } else {
+        return getFileSize() - start_position;
+    }
+}
+
 void Herix::loadIntoChunk (FilePosition pos, ChunkSize read_size, ChunkID cid, Chunk& chunk, bool eof_handling) {
+    // Modified pos
+    size_t mpos = getStartPosition() + pos;
+
+    // TODO: should we fail if mpos is past getFileEnd()?
+
     file.clear();
-    file.seekg(static_cast<std::streamoff>(pos));
+    file.seekg(static_cast<std::streamoff>(mpos));
     if (file.fail()) {
-        throw std::runtime_error("Failed to seek to position in file!: " + std::to_string(pos) + " | " + std::to_string(static_cast<std::streamoff>(pos)));
+        throw std::runtime_error("Failed to seek to position in file!: " + std::to_string(mpos) + " | " + std::to_string(static_cast<std::streamoff>(mpos)));
     }
 
     chunk.data.resize(read_size);
@@ -177,6 +198,7 @@ void Herix::loadIntoChunk (FilePosition pos, ChunkSize read_size, ChunkID cid, C
     }
 }
 
+// We don't modify the pos here with the start_position since we're storing the data
 void Herix::loadChunk (FilePositionStart pos, ChunkSize read_size) {
     if (!file.is_open()) {
         throw std::runtime_error("Attempting to load chunk whilst file was not open");
@@ -404,7 +426,7 @@ void Herix::saveHistoryDestructive () {
     // TODO: make this efficient, so it only writes what it needs to
     // TODO: it'd also be nice to make so if it fails at writing, then there won't be partial writes
     for (const EditStorageItem& edit : edits.edits) {
-        file.seekp(static_cast<std::streampos>(edit.pos));
+        file.seekp(static_cast<std::streampos>(getStartPosition() + edit.pos));
         // TODO: this is icky, we need to replace file's type with one which uses Byte.
         // TODO: check if size is withing std::streamsize
         file.write(reinterpret_cast<const char *>(edit.data.data()), static_cast<std::streamsize>(edit.data.size()));
@@ -416,6 +438,7 @@ void Herix::saveHistoryDestructive () {
 /// Saves the files, to the filename. Overwrites if it already exists
 /// It's up to the code using this to check if it already exists, if they care about that.
 /// The current file then becomes output
+// TODO: Make a function that only saves the portion of the file we're editing (getStartPosition() through getEndPosition)
 void Herix::saveAsHistoryDestructive (std::string output) {
     if (!hasFile()) {
         throw std::runtime_error("No file.");
