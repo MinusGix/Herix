@@ -135,14 +135,14 @@ size_t Herix::getFileSize () const {
 size_t Herix::getFileEnd () const {
     size_t file_size = getFileSize();
 
-    if (file_size <= start_position) {
-        return 0;
-    } else if (end_position.has_value()) {
+    if (end_position.has_value()) {
         if (end_position.value() < start_position) {
             return 0;
         } else {
             return end_position.value() - start_position;
         }
+    } else if (file_size <= start_position) {
+        return 0;
     } else {
         return getFileSize() - start_position;
     }
